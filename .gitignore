@@ -1,0 +1,17 @@
+# Virtual environment
+.venv/
+
+# Secrets: never committed
+.env
+
+# Python and Jupyter caches
+__pycache__/
+.ipynb_checkpoints/
+.pytest_cache/
+
+# Raw API responses and pipeline outputs: rebuilt by the pipeline
+data/cache/
+data/output/
+
+# Editor settings
+.vscode/
