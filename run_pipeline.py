@@ -4,6 +4,7 @@ from pipeline import config
 from pipeline.fetch import fetch_all
 from pipeline.flatten import flatten_all
 from pipeline.join import join_all
+from pipeline.profile import profile_films
 from pipeline.load_ids import load_ids
 
 timings = {}
@@ -43,6 +44,7 @@ def main():
     details, credits, fetch_log, account = timed("fetch", fetch_all, account)
     tables = timed("flatten", flatten_all, details, credits, fetch_log)
     tables = timed("join", join_all, account, tables)
+    tables |= timed("profile", profile_films, tables["films"])
     save_tables(tables)
     timed("analyse", not_built, "analyse")
     report_id_account(account)
