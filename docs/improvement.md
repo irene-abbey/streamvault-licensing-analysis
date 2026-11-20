@@ -8,16 +8,18 @@ The brief fixes one cut-off, 2000, because Yaw in Finance distrusts older figure
 
 One extra table, produced on every run of the pipeline (`data/output/kpi_by_cutoff_year.csv`). It repeats the franchise-against-standalone comparison for films released from each of six cut-off years, with the number of films behind each figure:
 
-| Films from | Franchise films | Standalone films | Franchise median return | Standalone median return | Franchise to standalone |
-|---|---|---|---|---|---|
-| 1980 | 91 | 15 | 5.41 | 3.24 | 1.67 |
-| 1990 | 79 | 14 | 5.12 | 3.84 | 1.33 |
-| 1995 | 71 | 9 | 5.12 | 3.24 | 1.58 |
-| 2000 | 63 | 8 | 5.05 | 3.84 | 1.32 |
-| 2005 | 39 | 5 | 4.56 | 3.24 | 1.41 |
-| 2010 | 21 | 2 | 4.56 | 4.88 | 0.93 |
+| Films from | Franchise films | Standalone films | Franchise median return | Standalone median return | Franchise to standalone | Reliable |
+|---|---|---|---|---|---|---|
+| 1980 | 91 | 15 | 5.41 | 3.24 | 1.67 | Yes |
+| 1990 | 79 | 14 | 5.12 | 3.84 | 1.33 | Yes |
+| 1995 | 71 | 9 | 5.12 | 3.24 | 1.58 | Yes |
+| 2000 | 63 | 8 | 5.05 | 3.84 | 1.32 | Yes |
+| 2005 | 39 | 5 | 4.56 | 3.24 | 1.41 | Yes, just (5 standalone films) |
+| 2010 | 21 | 2 | 4.56 | 4.88 | 0.93 | **No: too few films** |
 
-The cut-off years are a setting in `pipeline/config.py`, so Adjoa can test any year without changing code.
+A row is marked not reliable when either group has fewer than 5 films (`MIN_GROUP_SIZE` in `pipeline/config.py`). The same column is added to the sensitivity table.
+
+The cut-off years and the minimum group size are settings in `pipeline/config.py`, so Adjoa can test any year without changing code.
 
 ## What it shows
 

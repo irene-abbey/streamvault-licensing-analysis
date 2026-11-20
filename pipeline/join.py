@@ -24,6 +24,15 @@ FILM_COLUMNS_FOR_TALENT = ["tmdb_id", "title", "release_date", "budget", "revenu
 
 def check_account_against_films(account: pd.DataFrame, films: pd.DataFrame) -> None:
     """Every fetched id has exactly one film, and every film came from a fetched id."""
+    # Every row must have one of the outcomes the fetch stage writes. Anything
+    # else (for example "to fetch" left over) means a stage did not finish.
+    expected = {"fetched", "duplicate", "excluded", "fetch failed"}
+    unexpected = set(account["outcome"]) - expected
+    if unexpected:
+        raise ValueError(f"Unexpected outcomes in the id account: {sorted(unexpected)}")
+    if not account["outcome"].eq("fetched").any():
+        raise ValueError("No id in the account was fetched; nothing to analyse")
+
     fetched = account.loc[account["outcome"].eq("fetched"), ["tmdb_id"]]
     linked = fetched.merge(films[["tmdb_id"]], on="tmdb_id", how="outer",
                            validate="one_to_one", indicator=True)

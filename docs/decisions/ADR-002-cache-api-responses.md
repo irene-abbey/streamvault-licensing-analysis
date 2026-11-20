@@ -6,7 +6,7 @@
 
 ## Context
 
-The analysis needs two TMDb requests per film (details and credits): 234 requests for this year's 117 ids, and about 1,000 for next year's list of about 500. TMDb is a free, shared service, and many learners are fetching the same films this week. Development means running the pipeline many times. Adjoa must be able to rerun the analysis on her own laptop, sometimes live in a meeting, possibly without internet (Q1). TMDb is edited by its community every day, so the same request can return different numbers on different days. The first full fetch took about 117 seconds; the same run from the cache took under a second.
+The analysis needs two TMDb requests per film (details and credits): 234 requests for the 117 unique TMDb ids in this year's 127-row list (the other 10 rows are duplicates or not ids; data diagnosis F1 to F3), and about 1,000 for next year's list of about 500. TMDb is a free, shared service, and many learners are fetching the same films this week. Development means running the pipeline many times. Adjoa must be able to rerun the analysis on her own laptop, sometimes live in a meeting, possibly without internet (Q1). TMDb is edited by its community every day, so the same request can return different numbers on different days. The first full fetch took about 117 seconds; the same run from the cache took under a second.
 
 ## Decision
 

@@ -8,6 +8,7 @@ ROOT = Path(__file__).resolve().parent.parent
 ID_LIST = ROOT / "data" / "input" / "id_list.csv"
 CACHE_DIR = ROOT / "data" / "cache"
 OUTPUT_DIR = ROOT / "data" / "output"
+CHECKS_DIR = OUTPUT_DIR / "checks"   # spot-check and timing results, kept between runs
 
 # TMDb API
 API_BASE_URL = "https://api.themoviedb.org/3"
@@ -19,6 +20,7 @@ USER_AGENT = "streamvault-licensing-analysis (AmaliTech DE02 training)"
 
 # Analysis rules
 WINDOW_START_YEAR = 2000
+MIN_GROUP_SIZE = 5               # a median over fewer films is shown but marked not reliable
 MIN_FILMS_PER_FRANCHISE = 2      # films on the list before a franchise can be shortlisted (Q7)
 MIN_FILMS_PER_PERSON = 3         # films before a director or lead counts as a signal
 MIN_SERIES_PER_PERSON = 2        # ...spread over at least this many different series

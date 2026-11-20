@@ -1,7 +1,7 @@
 # Spot-check against the live API
 
 **Run:** 2026-11-20, against the snapshot fetched the same day.
-**Command:** `python spot_check.py` (needs internet and a TMDb key). Full results: `data/output/spot_check.csv`.
+**Command:** `python spot_check.py` (needs internet and a TMDb key). Full results: `data/output/checks/spot_check.csv`.
 
 ## What was checked
 
@@ -14,7 +14,7 @@
 | Most transformed | The Dark Knight (listed twice and also as an IMDb id), The Lion King and Avengers: Endgame (co-directed) | The most handling, so the most chances for an error |
 | Boundary and decision drivers | Toy Story 2 (last film before 2000), Mission: Impossible II (first from 2000), The Lion King (single-film collection), the three Lord of the Rings films (behind the deal-note number) | They decide which window and group a film is in, and the one number in the deal note |
 
-For each film, 8 fields were compared: title, release date, budget, revenue, collection, IMDb id, the three lead actors and the directors. That is 104 fields.
+For each film, 8 fields were compared: title, release date, budget, revenue, collection, IMDb id, the lead actors (one field: the ids of the three top-billed actors, in billing order) and the directors (one field: the ids of all directors). 13 films times 8 fields is 104 fields.
 
 Each field was compared three ways: the pipeline's table, the cached response it was built from, and a fresh request to TMDb (not from the cache). A difference would be classed as:
 

@@ -15,7 +15,10 @@ evenly:
 - boundary and decision drivers: films either side of the 2000 cut-off, a
   single-film collection, and the films behind the deal-note number
 
-Each field is compared three ways: the pipeline's table, the cached response it
+Eight fields are compared per film: title, release date, budget, revenue,
+collection, IMDb id, the lead actors (one field: their ids in billing order)
+and the directors (one field: their ids). Each field is compared three ways:
+the pipeline's table, the cached response it
 was built from, and a fresh live response (never from the cache). That makes
 every difference classifiable:
 - table differs from the cached response: our bug
@@ -24,25 +27,27 @@ every difference classifiable:
 Tolerances were set before looking: exact for ids, titles, dates and people;
 budget and revenue within MONEY_TOLERANCE (1%).
 """
+import contextlib
+import io
 import json
 
 import pandas as pd
 
 from pipeline import config
 from pipeline.analyse import prepare
-from pipeline.fetch import ApiClient, _cache_file, fetch_all
-from pipeline.flatten import flatten_all
-from pipeline.join import join_all
-from pipeline.load_ids import load_ids
+from pipeline.fetch import ApiClient, _cache_file
+from run_pipeline import run_stages
 
 MONEY_FIELDS = {"budget", "revenue"}
 
 
 def build_snapshot_tables() -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Rebuild the pipeline's tables from the cache, exactly as the pipeline does."""
-    account = load_ids()
-    details, credits, fetch_log, account = fetch_all(account)
-    tables = join_all(account, flatten_all(details, credits, fetch_log))
+    """Rebuild the pipeline's tables from the cache, with the same stages as a normal run."""
+    def quiet_timer(name, stage, *args):
+        return stage(*args)
+
+    with contextlib.redirect_stdout(io.StringIO()):
+        _, tables, _, _ = run_stages(quiet_timer, save=False)
     return prepare(tables["films"]), tables["film_talent"]
 
 
@@ -159,8 +164,8 @@ def main() -> None:
             })
 
     results = pd.DataFrame(rows)
-    config.OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    results.to_csv(config.OUTPUT_DIR / "spot_check.csv", index=False)
+    config.CHECKS_DIR.mkdir(parents=True, exist_ok=True)
+    results.to_csv(config.CHECKS_DIR / "spot_check.csv", index=False)
 
     print(f"Fields compared: {len(results)} ({results['tmdb_id'].nunique()} films)")
     print(results["result"].value_counts().to_string())
@@ -174,7 +179,7 @@ def main() -> None:
     print("\nSample:")
     print(sample.merge(films[["tmdb_id", "title"]], on="tmdb_id")[
         ["title", "group", "reason"]].to_string(index=False))
-    print("Saved to data/output/spot_check.csv")
+    print("Saved to data/output/checks/spot_check.csv")
 
 
 if __name__ == "__main__":

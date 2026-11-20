@@ -12,8 +12,8 @@ The brief does not give a number, so this target is my own assumption (questions
 - **What was timed:** each stage of `run_pipeline.py`, from the start of the stage to the end, using `time.perf_counter()`: load ids, fetch (answered from the cache), flatten, join, profile and analyse. Printing to the screen is excluded.
 - **What was not timed:** fetching from TMDb. The first full fetch of 235 requests took 117 seconds on 2026-11-20, most of it the deliberate 0.25-second pause between requests (ADR-002).
 - **Runs:** 6 full runs in a row. The first is reported separately as the **cold run** (files not yet in the computer's memory). The figure reported is the **median of runs 2 to 6** (warm runs), with the slowest warm run beside it.
-- **Scaling:** the analysis stage was run 6 times each on synthetic lists of 127, 500 and 5,000 films, built by sampling the real films with replacement and giving each copy a new id. The median is reported.
-- **How to reproduce:** after one full `python run_pipeline.py`, run `python measure.py`. Results are saved to `data/output/timings.csv` and `data/output/scaling.csv`.
+- **Scaling:** the analysis stage was run 6 times each on synthetic lists of 127, 500 and 5,000 films, built by sampling the real films with replacement (fixed seed, so the lists are the same on every run) and giving each copy a new id. The median is reported.
+- **How to reproduce:** after one full `python run_pipeline.py`, run `python measure.py`. Results are saved to `data/output/checks/timings.csv` and `data/output/checks/scaling.csv`.
 
 ## Results
 
@@ -68,6 +68,6 @@ The first fetch from TMDb at 500 titles is about 1,000 requests, roughly 8 to 10
 ## Caveats
 
 - **The cold read is the risk to the target.** The cold run spent 6.95 of its 7.26 seconds opening the 234 small cache files for the first time. On Windows this is usually the disk and the antivirus scanning each file; once read, the same files take 0.12 seconds. At 500 titles a cold rerun could exceed 10 seconds. Two simple mitigations: run the pipeline once before the meeting so the files are warm, or store the cache as one file per endpoint instead of one file per film (a change for next year, not made here).
-- **Synthetic lists repeat real films,** so they have the same shape of data (cast sizes, collections) as this year's list. A list with very different films could time differently.
+- **Synthetic lists repeat real films many times:** 500 films drawn from 112 means each real film appears about 4 times, and 5,000 means about 45 times. The timings show how the code grows with the number of rows, but the per-1,000-films figure may look better than it would for 5,000 genuinely different films, for example because a few collections grow very large. Next year's real list of about 500 titles should be timed with `measure.py` when it arrives.
 - **Timings vary between runs** by a few hundredths of a second; the slowest warm run is shown so the spread is visible.
 - **Only one machine was measured.** Adjoa's laptop may be slower or faster; `measure.py` lets her check on her own machine in under a minute.

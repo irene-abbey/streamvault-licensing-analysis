@@ -91,7 +91,7 @@ def sensitivity(films: pd.DataFrame) -> pd.DataFrame:
                     "higher_median": "franchise" if franchise["median_return"]
                         > standalone["median_return"] else "standalone",
                 })
-    return pd.DataFrame(rows)
+    return mark_reliability(pd.DataFrame(rows))
 
 
 def cutoff_sensitivity(films: pd.DataFrame) -> pd.DataFrame:
@@ -114,7 +114,14 @@ def cutoff_sensitivity(films: pd.DataFrame) -> pd.DataFrame:
             "franchise_to_standalone": round(
                 franchise["median_return"] / standalone["median_return"], 2),
         })
-    return pd.DataFrame(rows)
+    return mark_reliability(pd.DataFrame(rows))
+
+
+def mark_reliability(table: pd.DataFrame) -> pd.DataFrame:
+    """Mark rows where either group has fewer films than MIN_GROUP_SIZE."""
+    enough = (table["franchise_n"].ge(config.MIN_GROUP_SIZE)
+              & table["standalone_n"].ge(config.MIN_GROUP_SIZE))
+    return table.assign(reliable=enough.map({True: "yes", False: "no: too few films"}))
 
 
 def franchise_shortlist(films: pd.DataFrame) -> pd.DataFrame:

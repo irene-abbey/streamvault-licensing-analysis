@@ -1,3 +1,10 @@
+"""Time the pipeline from the cache, and test how the analysis grows with the list.
+
+Run after one full pipeline run, so the cache is filled: python measure.py
+Each stage is timed over 6 runs; the first (cold) run is reported separately
+and the median of the rest is the reported figure. Fetching from TMDb is not
+timed, because it measures the network, not our code.
+"""
 import contextlib
 import io
 import platform
@@ -9,49 +16,41 @@ import pandas as pd
 
 from pipeline import config
 from pipeline.analyse import analyse
-from pipeline.fetch import fetch_all
-from pipeline.flatten import flatten_all
-from pipeline.join import join_all
-from pipeline.load_ids import load_ids
-from pipeline.profile import profile_films
+from run_pipeline import run_stages
 
 RUNS = 6
 SCALE_SIZES = [127, 500, 5000]
 
 
 def run_once() -> tuple[dict, dict]:
-    """One full run from the cache, with output hidden; returns timings and tables."""
+    """One full run from the cache, with output hidden; returns timings and tables.
+
+    Uses run_stages() from run_pipeline.py, so the stages and their order are
+    exactly those of a normal run. Writing CSV files is left out, because it is
+    not part of any stage's work.
+    """
     timings = {}
+
+    def silent_timer(name, stage, *args):
+        start = time.perf_counter()
+        result = stage(*args)
+        timings[name] = time.perf_counter() - start
+        return result
+
     with contextlib.redirect_stdout(io.StringIO()):
-        start = time.perf_counter()
-        account = load_ids()
-        timings["load ids"] = time.perf_counter() - start
-
-        start = time.perf_counter()
-        details, credits, fetch_log, account = fetch_all(account)
-        timings["fetch (from cache)"] = time.perf_counter() - start
-
-        start = time.perf_counter()
-        tables = flatten_all(details, credits, fetch_log)
-        timings["flatten"] = time.perf_counter() - start
-
-        start = time.perf_counter()
-        tables = join_all(account, tables)
-        timings["join"] = time.perf_counter() - start
-
-        start = time.perf_counter()
-        profile_films(tables["films"])
-        timings["profile"] = time.perf_counter() - start
-
-        start = time.perf_counter()
-        analyse(tables)
-        timings["analyse"] = time.perf_counter() - start
+        _, tables, _, _ = run_stages(silent_timer, save=False)
     timings["total"] = sum(timings.values())
     return timings, tables
 
 
 def synthetic(tables: dict, n_films: int, seed: int = 0) -> dict:
-    """A list of n_films built by sampling the real films, each copy with a new id."""
+    """A list of n_films built by sampling the real films, each copy with a new id.
+
+    The seed is fixed, so the same synthetic lists are built on every run and
+    timings can be compared. Sampling 500 or 5,000 films from 112 repeats each
+    real film many times; the timings measure how the code grows with the
+    number of rows, not how it would handle 5,000 different films.
+    """
     films = tables["films"].sample(n_films, replace=True, random_state=seed)
     new_ids = pd.Series(np.arange(1, n_films + 1).astype(str), index=films.index)
     mapping = pd.DataFrame({"tmdb_id": films["tmdb_id"].to_numpy(),
@@ -96,10 +95,10 @@ def main() -> None:
     scaling["seconds per 1,000 films"] = (scaling["analyse (s)"] / scaling["films"] * 1000).round(3)
     print(scaling.to_string(index=False))
 
-    config.OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    report.to_csv(config.OUTPUT_DIR / "timings.csv")
-    scaling.to_csv(config.OUTPUT_DIR / "scaling.csv", index=False)
-    print("\nSaved to data/output/timings.csv and data/output/scaling.csv")
+    config.CHECKS_DIR.mkdir(parents=True, exist_ok=True)
+    report.to_csv(config.CHECKS_DIR / "timings.csv")
+    scaling.to_csv(config.CHECKS_DIR / "scaling.csv", index=False)
+    print("\nSaved to data/output/checks/timings.csv and data/output/checks/scaling.csv")
 
 
 if __name__ == "__main__":

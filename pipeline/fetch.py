@@ -1,3 +1,10 @@
+"""Stage 2: fetch each film's details and credits from TMDb, with a cache.
+
+Every response is cached with its fetch time, so a rerun makes no API calls.
+Only failures that waiting can fix (timeouts, 429, 5xx) are retried; a 404 is
+recorded and never retried; a 401 stops the run. The loop is over API calls,
+not rows of data: each id needs its own request.
+"""
 import json
 import random
 import time

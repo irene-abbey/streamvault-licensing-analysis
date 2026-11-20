@@ -7,7 +7,7 @@ The findings are in `docs/client-memo.md`. Everything below is for running it.
 ## What you need
 
 - Windows (tested on Windows 11). macOS and Linux work with the commands adjusted.
-- Python 3.11 or later (tested on 3.14 and 3.15).
+- Python 3.11 or later. The reported figures were produced with Python 3.15.2; the setup was also installed and run on Python 3.14.
 - A free TMDb API key: create an account at themoviedb.org, then Settings, API, and request a developer key. Use the **API Key**, not the Read Access Token.
 - Internet for the first run only.
 
@@ -39,7 +39,7 @@ python run_pipeline.py
 - **The first run** fetches every film from TMDb and saves the responses in `data/cache/`. It takes about 2 minutes for 127 ids (about 8 to 10 minutes for 500), because it pauses between requests to respect TMDb's limits.
 - **Every later run** reads from the cache, needs no internet or key, and takes under a second. Figures stay fixed to the date of the first fetch.
 
-The run prints each stage's checks and timings. Results are written to `data/output/`:
+The run prints each stage's checks and timings. Results are written to `data/output/`, each stage's tables as soon as that stage finishes. The previous run's results are removed first. If a stage fails, the run names the stage and stops, and the tables from the stages before it are still there.
 
 | File | What it holds |
 |---|---|
@@ -48,7 +48,7 @@ The run prints each stage's checks and timings. Results are written to `data/out
 | `profile_summary.csv`, `profile_flags.csv` | Data checks and the films they flag |
 | `kpi_headline.csv` | Franchise against standalone, both windows |
 | `kpi_sensitivity.csv` | The same comparison under each cleaning choice: does the answer flip? |
-| `kpi_by_cutoff_year.csv` | The comparison for other cut-off years (1980 to 2010) |
+| `kpi_by_cutoff_year.csv` | The comparison for other cut-off years (1980 to 2010), with rows on too few films marked not reliable |
 | `shortlist_franchises.csv`, `shortlist_standalones.csv`, `talent_read.csv` | Shortlists and the director and lead actor read |
 
 ## Other commands
@@ -56,6 +56,7 @@ The run prints each stage's checks and timings. Results are written to `data/out
 ```powershell
 python spot_check.py   # compares a sample of results with TMDb today (needs internet and the key)
 python measure.py      # times the pipeline and tests it on larger lists
+# both save their results in data/output/checks/
 ```
 
 ## Each quarter
@@ -87,6 +88,7 @@ pipeline/            one file per stage: load_ids, fetch, flatten, join, profile
 data/input/          the id list (committed)
 data/cache/          raw TMDb responses (not committed; rebuilt by the first run)
 data/output/         results (not committed; rebuilt by every run)
+data/output/checks/  spot-check and timing results (not committed; kept between runs)
 docs/                diagnosis, decisions (ADRs), questions, spot-check, measurement, memo, improvement
 ```
 
@@ -94,9 +96,8 @@ docs/                diagnosis, decisions (ADRs), questions, spot-check, measure
 
 - **TMDB_API_KEY is not set:** set it with `setx` as above, then open a new terminal.
 - **TMDb rejected the API key (401):** the key is wrong or expired; check it on the TMDb API settings page.
-- **Install fails on a newer Python:** `requirements.txt` lists only pandas, numpy and requests with minimum versions, so this should be rare; tell the maintainer which package failed.
+- **Install fails on a newer Python:** `requirements.txt` pins exact versions of only three packages (pandas, numpy, requests), so this should be rare. If one has no installer for your Python version, install that package without the version pin and note the version you got.
 
 ## Tested versions
 
 Python 3.15.2 with pandas 3.1.1, numpy 2.5.5 and requests 2.34.2 on Windows 11; Python 3.14 on a second laptop.
-

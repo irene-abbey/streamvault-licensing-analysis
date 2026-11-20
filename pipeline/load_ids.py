@@ -1,3 +1,8 @@
+"""Stage 1: load the candidate id list, report what is in it, and classify each row.
+
+The file is read exactly as written, and every row gets an outcome and a
+reason, so all rows can be accounted for later. Nothing is dropped.
+"""
 import pandas as pd
 
 from pipeline import config
@@ -10,6 +15,8 @@ def read_id_list(path=config.ID_LIST) -> pd.Series:
 
     table = pd.read_csv(path, dtype="string", keep_default_na=False,
                         skip_blank_lines=False)
+    if table.empty:
+        raise ValueError(f"The id list has no rows: {path}")
     if table.shape[1] != 1:
         raise ValueError(
             f"Expected one column, found {table.shape[1]}: {list(table.columns)}"
@@ -27,9 +34,10 @@ def check_ids(raw: pd.Series) -> dict:
     is_digits = stripped.str.fullmatch(r"\d+")
 
     # Hidden duplicates: different raw text that becomes the same id once
+    # spaces and leading zeros are removed (for example 0550 and 550).
     digits = pd.DataFrame({"raw_id": raw[is_digits],
-                           "normalised": stripped[is_digits].str.lstrip("0")})
-    forms_per_id = digits.groupby("normalised")["raw_id"].nunique()
+                           "clean_id": stripped[is_digits].str.lstrip("0")})
+    forms_per_id = digits.groupby("clean_id")["raw_id"].nunique()
     hidden_ids = forms_per_id[forms_per_id > 1].index
 
     return {
@@ -39,9 +47,9 @@ def check_ids(raw: pd.Series) -> dict:
         "not digits only": raw[~is_digits & stripped.ne("")].tolist(),
         "leading zero": raw[stripped.str.startswith("0")].tolist(),
         "exact repeats": raw[raw.duplicated(keep=False)].value_counts().to_dict(),
-        "same id written differently": digits[digits["normalised"].isin(hidden_ids)]
-            .groupby("normalised")["raw_id"].agg(list).to_dict(),
-        "unique ids after normalising": int(digits["normalised"].nunique()),
+        "same id written differently": digits[digits["clean_id"].isin(hidden_ids)]
+            .groupby("clean_id")["raw_id"].agg(list).to_dict(),
+        "unique ids after normalising": int(digits["clean_id"].nunique()),
     }
 
 

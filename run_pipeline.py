@@ -1,54 +1,83 @@
+"""Run the StreamVault pipeline from start to finish with one command:
+
+    python run_pipeline.py
+
+The stages run in a fixed order, defined once in run_stages(), which
+measure.py also uses. Each stage's tables are saved to data/output/ as soon as
+that stage finishes, so if a later stage fails, the earlier results can still
+be inspected. Results from the previous run are removed first, so data/output/
+never mixes two runs. If a stage fails, the run names the stage and stops.
+"""
 import time
 
 from pipeline import config
+from pipeline.analyse import analyse
 from pipeline.fetch import fetch_all
 from pipeline.flatten import flatten_all
 from pipeline.join import join_all
-from pipeline.profile import profile_films
-from pipeline.analyse import analyse
 from pipeline.load_ids import load_ids
+from pipeline.profile import profile_films
 
 timings = {}
 
 
 def timed(name, stage, *args):
-    """Run one stage, record how long it took, and return its result."""
+    """Run one stage, print its name, record how long it took, and return its result."""
     print(f"\n== {name} ==")
     start = time.perf_counter()
-    result = stage(*args)
+    try:
+        result = stage(*args)
+    except Exception:
+        print(f"\nFAILED in stage '{name}'. Results of the stages before it are in data/output/.")
+        raise
     timings[name] = round(time.perf_counter() - start, 3)
     return result
 
 
-def not_built(name):
-    print(f"{name}: not built yet")
-
-
-def report_id_account(account) -> None:
-    """Save the id account and show that every row of the input is accounted for."""
+def clear_outputs() -> None:
+    """Remove the previous run's tables, so outputs never mix two runs."""
     config.OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    account.to_csv(config.OUTPUT_DIR / "id_account.csv", index=False)
-    print("\n== id account ==")
-    print(account["outcome"].value_counts().to_string())
-    print(f"Total: {len(account)} rows, saved to data/output/id_account.csv")
+    for old_file in config.OUTPUT_DIR.glob("*.csv"):
+        old_file.unlink()
 
 
 def save_tables(tables: dict) -> None:
-    """Save each flattened table so it can be inspected between stages."""
+    """Save each table as a CSV file in data/output/."""
     config.OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     for name, table in tables.items():
         table.to_csv(config.OUTPUT_DIR / f"{name}.csv", index=False)
 
 
+def run_stages(timer, save: bool = True) -> tuple:
+    """Every stage, in order. timer runs and times one stage; save writes its tables."""
+    keep = save_tables if save else (lambda tables: None)
+
+    account = timer("load ids", load_ids)
+    keep({"id_account": account})
+
+    details, credits, fetch_log, account = timer("fetch", fetch_all, account)
+    keep({"id_account": account})
+
+    tables = timer("flatten", flatten_all, details, credits, fetch_log)
+    keep(tables)
+
+    tables = timer("join", join_all, account, tables)
+    keep({"film_talent": tables["film_talent"]})
+
+    profile = timer("profile", profile_films, tables["films"])
+    keep(profile)
+
+    results = timer("analyse", analyse, tables)
+    keep(results)
+    return account, tables, profile, results
+
+
 def main():
-    account = timed("load ids", load_ids)
-    details, credits, fetch_log, account = timed("fetch", fetch_all, account)
-    tables = timed("flatten", flatten_all, details, credits, fetch_log)
-    tables = timed("join", join_all, account, tables)
-    tables |= timed("profile", profile_films, tables["films"])
-    tables |= timed("analyse", analyse, tables)
-    save_tables(tables)
-    report_id_account(account)
+    clear_outputs()
+    account, tables, profile, results = run_stages(timed)
+    print("\n== id account ==")
+    print(account["outcome"].value_counts().to_string())
+    print(f"Total: {len(account)} rows, saved to data/output/id_account.csv")
     print("\nSeconds per stage:", timings)
 
 
