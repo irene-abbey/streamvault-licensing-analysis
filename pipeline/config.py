@@ -17,6 +17,7 @@ USER_AGENT = "streamvault-licensing-analysis (AmaliTech DE02 training)"
 
 # Analysis rules
 WINDOW_START_YEAR = 2000
+LEAD_ACTOR_COUNT = 3 
 
 
 def get_api_key() -> str:
