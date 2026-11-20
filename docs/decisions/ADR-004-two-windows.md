@@ -8,7 +8,7 @@
 
 The brief requires the franchise-against-standalone comparison for all years and for 2000 onward, and says that if the recommendation changes between them, it must be said loudly. Yaw in Finance distrusts anything released before 2000 because of inflation, currency and how box office used to be reported, and he will say so in the room.
 
-Profiling showed his concern is real in this list: all 11 extreme returns are films from 1966 to 1994, nine of them in a collection (data diagnosis, F8). Their revenue is lifetime box office, including re-releases, so old films look stronger than a film licensed today can be. 41 of the 112 films were released before 2000. The 2000-onward standalone group has only 8 films.
+Profiling showed his concern is real in this list: all 11 extreme returns are films from 1966 to 1994, nine of them in a collection (data diagnosis, F5). Their revenue is lifetime box office, including re-releases, so old films look stronger than a film licensed today can be. 41 of the 112 films were released before 2000. The 2000-onward standalone group has only 8 films.
 
 ## Decision
 

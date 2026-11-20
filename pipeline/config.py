@@ -1,3 +1,5 @@
+"""Settings for the StreamVault pipeline: paths, API settings and analysis rules."""
+
 import os
 from pathlib import Path
 
@@ -9,10 +11,10 @@ OUTPUT_DIR = ROOT / "data" / "output"
 
 # TMDb API
 API_BASE_URL = "https://api.themoviedb.org/3"
-REQUEST_TIMEOUT = (5, 30)        
-MAX_RETRIES = 3                  
-BACKOFF_SECONDS = 1         
-PAUSE_BETWEEN_CALLS = 0.25   
+REQUEST_TIMEOUT = (5, 30)        # seconds: (connect, read)
+MAX_RETRIES = 3                  # for timeouts, 429 and 5xx only
+BACKOFF_SECONDS = 1              # waits 1, 2, 4 seconds between retries
+PAUSE_BETWEEN_CALLS = 0.25       # seconds, so we don't overload a free API
 USER_AGENT = "streamvault-licensing-analysis (AmaliTech DE02 training)"
 
 # Analysis rules
@@ -22,6 +24,10 @@ MIN_FILMS_PER_PERSON = 3         # films before a director or lead counts as a s
 MIN_SERIES_PER_PERSON = 2        # ...spread over at least this many different series
 STANDALONE_SHORTLIST = 5
 FRANCHISE_SHORTLIST = 3
+CUTOFF_YEARS_TO_TEST = [1980, 1990, 1995, 2000, 2005, 2010]   # for the cut-off sensitivity table
+SPOT_CHECK_SEED = 2026           # fixed, so the random part of the spot-check repeats
+SPOT_CHECK_RANDOM = 4            # films drawn at random for the spot-check
+MONEY_TOLERANCE = 0.01           # budget and revenue may differ by up to 1% in the spot-check
 LEAD_ACTOR_COUNT = 3             # billing orders 0, 1 and 2 count as lead actors (Q8)
 
 

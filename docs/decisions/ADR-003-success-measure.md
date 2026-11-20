@@ -8,7 +8,7 @@
 
 Kwame's team is arguing about whether franchise bundles or standalone films are the better buy. The standalone side's case is that bundles make StreamVault overpay, so any measure of success has to include cost. TMDb gives two money figures per film: budget (what the film cost to make) and revenue (worldwide box office). Neither is what StreamVault will pay or earn from streaming, so both are proxies.
 
-The data is lopsided. Across 112 films, the median return multiple is 5.37x but the mean is 8.50x, because a few old blockbusters returned 30 to 70 times their budget (data diagnosis, F8). Franchise films also cost more: in 2000 onward, the median franchise budget is 150 million against 65 million for standalones. The films span 1966 to 2019, and Yaw in Finance distrusts figures from before 2000.
+The data is lopsided. Across 112 films, the median return multiple is 5.37x but the mean is 8.50x, because a few old blockbusters returned 30 to 70 times their budget (data diagnosis, F5). Franchise films also cost more: in 2000 onward, the median franchise budget is 150 million against 65 million for standalones. The films span 1966 to 2019, and Yaw in Finance distrusts figures from before 2000.
 
 ## Decision
 

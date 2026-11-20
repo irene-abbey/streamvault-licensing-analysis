@@ -94,6 +94,29 @@ def sensitivity(films: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def cutoff_sensitivity(films: pd.DataFrame) -> pd.DataFrame:
+    """The franchise-against-standalone comparison for each cut-off year in config.
+
+    Answers the question Yaw will ask: would the answer change if the line were
+    drawn somewhere other than 2000? Each row uses only films released in or
+    after that year, with the number of films behind each median.
+    """
+    rows = []
+    for year in config.CUTOFF_YEARS_TO_TEST:
+        table = kpi_table(films[films["release_year"].ge(year)])
+        franchise, standalone = table.loc["franchise"], table.loc["standalone"]
+        rows.append({
+            "films_from": year,
+            "franchise_n": int(franchise["usable"]),
+            "standalone_n": int(standalone["usable"]),
+            "franchise_median": franchise["median_return"],
+            "standalone_median": standalone["median_return"],
+            "franchise_to_standalone": round(
+                franchise["median_return"] / standalone["median_return"], 2),
+        })
+    return pd.DataFrame(rows)
+
+
 def franchise_shortlist(films: pd.DataFrame) -> pd.DataFrame:
     """Collections scored by the median return of their films from 2000 onward (Q6, Q7).
 
@@ -165,6 +188,7 @@ def analyse(tables: dict) -> dict:
     results = {
         "kpi_headline": headline(films),
         "kpi_sensitivity": sensitivity(films),
+        "kpi_by_cutoff_year": cutoff_sensitivity(films),
         "shortlist_franchises": franchise_shortlist(films).reset_index(),
         "shortlist_standalones": standalone_shortlist(films),
         "talent_read": talent_read(tables["film_talent"], films),
@@ -172,6 +196,7 @@ def analyse(tables: dict) -> dict:
     show = {
         "kpi_headline": None,
         "kpi_sensitivity": None,
+        "kpi_by_cutoff_year": None,
         "shortlist_franchises": None,
         "shortlist_standalones": None,
         "talent_read": None,

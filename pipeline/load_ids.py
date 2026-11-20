@@ -40,7 +40,7 @@ def check_ids(raw: pd.Series) -> dict:
         "leading zero": raw[stripped.str.startswith("0")].tolist(),
         "exact repeats": raw[raw.duplicated(keep=False)].value_counts().to_dict(),
         "same id written differently": digits[digits["normalised"].isin(hidden_ids)]
-            .groupby("normalised")["raw_id"].apply(list).to_dict(),
+            .groupby("normalised")["raw_id"].agg(list).to_dict(),
         "unique ids after normalising": int(digits["normalised"].nunique()),
     }
 
