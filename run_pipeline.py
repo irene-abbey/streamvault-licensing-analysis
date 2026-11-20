@@ -5,6 +5,7 @@ from pipeline.fetch import fetch_all
 from pipeline.flatten import flatten_all
 from pipeline.join import join_all
 from pipeline.profile import profile_films
+from pipeline.analyse import analyse
 from pipeline.load_ids import load_ids
 
 timings = {}
@@ -45,8 +46,8 @@ def main():
     tables = timed("flatten", flatten_all, details, credits, fetch_log)
     tables = timed("join", join_all, account, tables)
     tables |= timed("profile", profile_films, tables["films"])
+    tables |= timed("analyse", analyse, tables)
     save_tables(tables)
-    timed("analyse", not_built, "analyse")
     report_id_account(account)
     print("\nSeconds per stage:", timings)
 

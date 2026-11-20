@@ -17,7 +17,12 @@ USER_AGENT = "streamvault-licensing-analysis (AmaliTech DE02 training)"
 
 # Analysis rules
 WINDOW_START_YEAR = 2000
-LEAD_ACTOR_COUNT = 3 
+MIN_FILMS_PER_FRANCHISE = 2      # films on the list before a franchise can be shortlisted (Q7)
+MIN_FILMS_PER_PERSON = 3         # films before a director or lead counts as a signal
+MIN_SERIES_PER_PERSON = 2        # ...spread over at least this many different series
+STANDALONE_SHORTLIST = 5
+FRANCHISE_SHORTLIST = 3
+LEAD_ACTOR_COUNT = 3             # billing orders 0, 1 and 2 count as lead actors (Q8)
 
 
 def get_api_key() -> str:
